@@ -1,4 +1,4 @@
-import httplib2
+import requests
 import time
 import os
 from sys import exit
@@ -54,7 +54,6 @@ class ChinaUnicom_Login():
     
     
     def login(self):
-        h = httplib2.Http()
         headers = {}
         headers['accept'] = "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01"
         headers['x-requested-with'] = "XMLHttpRequest"
@@ -70,19 +69,18 @@ class ChinaUnicom_Login():
         url = "http://202.106.46.37/login.do?callback=jQuery17100013734368553252607_1378108363139&username=%s&password=%s&passwordType=6&wlanuserip=&userOpenAddress=bj&checkbox=1&basname=&setUserOnline=&sap=&macAddr=&bandMacAuth=0&isMacAuth=&basPushUrl=http://202.106.46.37/&passwordkey=&_=1378108463014"\
               % (self.phone_number, self.password)
         
-        response, content = h.request(url, headers=headers)
+        response = requests.get(url, headers=headers)
         print(response)
-        print(content)
+        print(response.text)
 
 
     def test_state(self):
         
         #测试是否处于已登录状态
         
-        h = httplib2.Http()
-        response, _ = h.request('http://61.135.169.105/') # http://www.baidu.com
+        response = requests.get('http://61.135.169.105/') # http://www.baidu.com
         
-        if response['content-location'] == 'http://202.106.46.37':
+        if response.url.startswith('http://202.106.46.37'):
             #访问baidu却跳转到CU登陆页面,说明未登陆
             self.state = False
         else:

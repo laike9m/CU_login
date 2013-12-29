@@ -1,4 +1,4 @@
-import httplib2
+import requests
 import time
 import os
 from sys import exit
@@ -26,7 +26,7 @@ class ChinaUnicom_Login():
         elif sys_type == 'Windows':
             self.userinfo_dir = user_dir + '\\My Documents\\CU_login'
         else:
-            print('Unsupported system.Try using Linux or Windows.')
+            print 'Unsupported system.Try using Linux or Windows.'
             exit(0) # 平台不支持,直接退出
         
         if os.path.exists(os.path.join(self.userinfo_dir, 'userinfo')):
@@ -38,23 +38,22 @@ class ChinaUnicom_Login():
             if not os.path.exists(self.userinfo_dir):
                 os.mkdir(self.userinfo_dir)
                 
-            choice = input("Do you want your info be stored in this CPU? : (Y/N) ")
+            choice = raw_input("Do you want your info be stored in this CPU? : (Y/N) ")
             
             if (True if choice=='Y' or 'y' else False):
                 # 用户选择保存个人信息
                 with open(os.path.join(self.userinfo_dir, 'userinfo'), 'w') as userinfo_file:
-                    self.phone_number = input('Please enter your phone number: ')
-                    self.password = input('Please enter your password: ')
+                    self.phone_number = raw_input('Please enter your phone number: ')
+                    self.password = raw_input('Please enter your password: ')
                     userinfo_file.write(self.phone_number + '\n' + self.password)
             else:
-                self.phone_number = input('Please enter your phone number: ')
-                self.password = input('Please enter your password: ')
+                self.phone_number = raw_input('Please enter your phone number: ')
+                self.password = raw_input('Please enter your password: ')
         
-        print(self.phone_number, '  ', self.password)
+        print self.phone_number + '  ' + self.password
     
     
     def login(self):
-        h = httplib2.Http()
         headers = {}
         headers['accept'] = "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01"
         headers['x-requested-with'] = "XMLHttpRequest"
@@ -70,19 +69,18 @@ class ChinaUnicom_Login():
         url = "http://202.106.46.37/login.do?callback=jQuery17100013734368553252607_1378108363139&username=%s&password=%s&passwordType=6&wlanuserip=&userOpenAddress=bj&checkbox=1&basname=&setUserOnline=&sap=&macAddr=&bandMacAuth=0&isMacAuth=&basPushUrl=http://202.106.46.37/&passwordkey=&_=1378108463014"\
               % (self.phone_number, self.password)
         
-        response, content = h.request(url, headers=headers)
-        print(response)
-        print(content)
+        response = requests.get(url, headers=headers)
+        print response
+        print response.text
 
 
     def test_state(self):
         
         #测试是否处于已登录状态
         
-        h = httplib2.Http()
-        response, _ = h.request('http://61.135.169.105/') # http://www.baidu.com
+        response = requests.get('http://61.135.169.105/') # http://www.baidu.com
         
-        if response['content-location'] == 'http://202.106.46.37':
+        if response.url.startswith('http://202.106.46.37'):
             #访问baidu却跳转到CU登陆页面,说明未登陆
             self.state = False
         else:
@@ -96,11 +94,11 @@ class ChinaUnicom_Login():
         self.test_state()
         ctime = time.ctime()
         if not self.state:  
-            print('Current state: not logged in --- %s\n' % ctime)
+            print 'Current state: not logged in --- %s\n' % ctime 
             self.login()
-            print('\nlogin successful --- %s\n' % ctime)
+            print '\nlogin successful --- %s\n' % ctime
         else:
-            print('Current state: logged in --- %s\n' % ctime)
+            print 'Current state: logged in --- %s\n' % ctime
         Timer(self.interval, self.loop).start()
                 
                 
